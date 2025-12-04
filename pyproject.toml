@@ -1,0 +1,21 @@
+[project]
+name = "pynim"
+version = "0.1.0"
+description = ""
+requires-python = ">=3.8"
+dependencies = [
+    "pycryptodome",
+    "jsonrpcserver",
+    "argparse",
+    "plyvel",
+]
+
+[project.scripts]
+pynim-account = "pynim.scripts.account:main"
+pynim-init = "pynim.scripts.init:main"
+
+pynim-boot = "pynim.scripts.pynim_boot:main"
+
+[build-system]
+requires = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
