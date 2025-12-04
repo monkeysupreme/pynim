@@ -1,15 +1,15 @@
 import json
+import logging
 import socket
 import threading
+
 from pynim.net.peer import Peer
+
+logger = logging.getLogger()
 
 
 class Node:
-    def __init__(
-            self, 
-            host: str = "0.0.0.0", 
-            port: int = 4343
-    ) -> None:
+    def __init__(self, host: str = "0.0.0.0", port: int = 4343) -> None:
         self.host = host
         self.port = port
         self.peers: list[Peer] = []
@@ -20,6 +20,7 @@ class Node:
         t = threading.Thread(target=self._listen)
         t.daemon = True
         t.start()
+        logger.info(f"Starting peer on {self.host}:{self.port}")
 
     def _listen(self) -> None:
         server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -27,7 +28,10 @@ class Node:
         server.listen()
         while self.running:
             conn, addr = server.accept()
-            threading.Thread(target=self._handle_client,args=(conn,),daemon=True).start()
+            logging.info(f"Listening for connections on {addr[0]}:{addr[1]}")
+            threading.Thread(
+                target=self._handle_client, args=(conn,), daemon=True
+            ).start()
 
     def connect(self, host: str, port: int):
         peer = Peer(host, port)

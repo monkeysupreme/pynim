@@ -6,11 +6,11 @@ from pynim.hashes import keccak256
 
 class ConsensusEngine:
     def __init__(
-            self,
-            block_time: int,
-            validator_stakes: dict[bytes, int],
-            validators: list[bytes],
-            block_by_hash: dict[bytes, Block],
+        self,
+        block_time: int,
+        validator_stakes: dict[bytes, int],
+        validators: list[bytes],
+        block_by_hash: dict[bytes, Block],
     ) -> None:
         self.block_time = block_time
         self.validator_stakes = validator_stakes
@@ -21,7 +21,9 @@ class ConsensusEngine:
 
     def select_proposer(self) -> bytes:
         total = sum(max(1, self.validator_stakes.get(v, 0)) for v in self.validators)
-        seed = keccak256(self.current_head if self.current_head is not None else b"\x00" * 32)
+        seed = keccak256(
+            self.current_head if self.current_head is not None else b"\x00" * 32
+        )
         r = int.from_bytes(seed, "big") % total
         cum = 0
         for v in self.validators:
@@ -34,11 +36,11 @@ class ConsensusEngine:
     def validate_block_header(self, header: Header) -> bool:
         if self.current_head:
             parent = self.block_by_hash.get(self.current_head)
-            if not parent: 
+            if not parent:
                 return False
-            if header.number != parent.header.number + 1: 
+            if header.number != parent.header.number + 1:
                 return False
-            if header.timestamp < parent.header.timestamp + self.block_time: 
+            if header.timestamp < parent.header.timestamp + self.block_time:
                 return False
         return True
 

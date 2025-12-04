@@ -1,40 +1,52 @@
+from pynim.datatypes import Transaction
 from pynim.vm.opcode import (
-    OP_PUSH32, OP_STOP, OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_MOD,
-    OP_ADDRESS, OP_BALANCE, OP_CODESIZE, OP_GASPRICE,
-    OP_BLOCKHASH, OP_TIMESTAMP, OP_NUMBER, OP_GASLIMIT, OP_BASEFEE, OP_SELFBALANCE,
-    OP_LOAD, OP_STORE, OP_PUSH, OP_PUSH32
+    OP_ADD,
+    OP_ADDRESS,
+    OP_BALANCE,
+    OP_BASEFEE,
+    OP_BLOCKHASH,
+    OP_CODESIZE,
+    OP_DIV,
+    OP_GASLIMIT,
+    OP_GASPRICE,
+    OP_LOAD,
+    OP_MOD,
+    OP_MUL,
+    OP_NUMBER,
+    OP_PUSH,
+    OP_PUSH32,
+    OP_SELFBALANCE,
+    OP_STOP,
+    OP_STORE,
+    OP_SUB,
+    OP_TIMESTAMP,
 )
 
 MAX_STACK = 256
 
 
 GAS_COST = {
-    OP_STOP:       0,
-    OP_ADD:        3,
-    OP_SUB:        3,
-    OP_MUL:        5,
-    OP_DIV:        5,
-    OP_MOD:        5,
-
-    OP_PUSH:       3,
-    OP_PUSH32:     3,
-
-    OP_ADDRESS:    2,
-    OP_BALANCE:    20,
-    OP_CODESIZE:   2,
-    OP_GASPRICE:   1,
-
-    OP_BLOCKHASH:  20,
-    OP_TIMESTAMP:  2,
-    OP_NUMBER:     2,
-    OP_GASLIMIT:   2,
-    OP_BASEFEE:    2,
-    OP_SELFBALANCE:5,
-
-    OP_STORE:      20,
-    OP_LOAD:       5,
+    OP_STOP: 0,
+    OP_ADD: 3,
+    OP_SUB: 3,
+    OP_MUL: 5,
+    OP_DIV: 5,
+    OP_MOD: 5,
+    OP_PUSH: 3,
+    OP_PUSH32: 3,
+    OP_ADDRESS: 2,
+    OP_BALANCE: 20,
+    OP_CODESIZE: 2,
+    OP_GASPRICE: 1,
+    OP_BLOCKHASH: 20,
+    OP_TIMESTAMP: 2,
+    OP_NUMBER: 2,
+    OP_GASLIMIT: 2,
+    OP_BASEFEE: 2,
+    OP_SELFBALANCE: 5,
+    OP_STORE: 20,
+    OP_LOAD: 5,
 }
-
 
 
 class OutOfGas(Exception):
@@ -88,7 +100,7 @@ class Machine:
     def _push(self, x: int | str) -> None:
         if len(self.stack) > MAX_STACK:
             raise StackOverflow("Stack overflow")
-        self.stack.append(x & ((1 << 256) - 1)) # type: ignore
+        self.stack.append(x & ((1 << 256) - 1))  # type: ignore
 
     def _pop(self) -> int:
         if not self.stack:
@@ -131,7 +143,7 @@ class Machine:
         if opcode == OP_DIV:
             b = self._pop()
             a = self._pop()
-            self._push(a / b)
+            self._push(a // b)
             return
 
         if opcode == OP_MOD:
@@ -144,17 +156,17 @@ class Machine:
             if self.pc >= len(self.code):
                 raise Exception("PUSH missing immediate value")
 
-            value = self.code[self.pc]   
+            value = self.code[self.pc]
             self._push(value)
 
-            self.pc += 1                
+            self.pc += 1
             return
 
         if opcode == OP_PUSH32:
-            data = self.code[self.pc + 1:self.pc + 33]
+            data = self.code[self.pc + 1 : self.pc + 33]
             if len(data) < 32:
                 raise Exception("PUSH32 missing data")
-            self.stack.append(bytes(data)) # type: ignore
+            self.stack.append(bytes(data))  # type: ignore
             self.pc += 33
             return
 
@@ -207,7 +219,7 @@ class Machine:
         if opcode == OP_LOAD:
             key = self._pop()
             value = self.storage.get(key)
-            self._push(value) # type: ignore
+            self._push(value)  # type: ignore
             return
 
         raise Exception(f"unknown opcode: {hex(opcode)}")
@@ -219,7 +231,21 @@ class Machine:
     def push_u256(self, value: int) -> list[int]:
         data = value.to_bytes(32, "big")
         return [OP_PUSH32] + list(data)
-    
+
+    def execute_transaction(self, tx: Transaction) -> None:
+        total_cost = tx.calculate_gas_in_nim()
+        if tx.sender == tx.recipient:
+            return
+        if self.balance < total_cost + tx.value:
+            raise Exception("insufficient balance for gas + value")
+
+        self.balance -= total_cost
+        self.balance -= tx.value
+
+        if tx.input_data and len(tx.input_data) > 0:
+            self.load(tx.input_data, tx.gas)
+            self.run()
+
 
 def push_address(addr: bytes) -> list[int]:
     if not isinstance(addr, bytes):

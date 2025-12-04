@@ -17,18 +17,18 @@ def wei_to_nim(amount_wei: int) -> float:
 
 
 def create_coinbase_transaction(
-        current_time: int,
-        sender: Account,
-        recipient: bytes,
-        value: int,
-        input_data: Optional[bytes],
-        vm: Machine,
+    current_time: int,
+    sender: Account,
+    recipient: bytes,
+    value: int,
+    input_data: Optional[bytes],
+    vm: Machine,
 ) -> Transaction:
     bytecode = (
-        push_address(sender.address) + 
-        push_address(recipient) + 
-        vm.push_u256(value) + 
-        [OP_STOP]
+        push_address(sender.address)
+        + push_address(recipient)
+        + vm.push_u256(value)
+        + [OP_STOP]
     )
 
     vm.load(bytes(bytecode), gas=10)
@@ -42,6 +42,8 @@ def create_coinbase_transaction(
         value=value,
         input_data=input_data,
         signature=None,
+        gas=0,
+        gas_price=0,
     )
     coinbase.hash = keccak256(coinbase.serialize())
     return coinbase

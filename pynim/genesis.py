@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+
 from pynim.account import Account
 from pynim.datatypes import Block, Header, Transaction
 from pynim.hashes import keccak256
@@ -48,7 +49,7 @@ class GenesisBlock(Block, Serializable):
             "current_time": self.current_time,
             "input_data": self.vm.code.hex(),
         }
-    
+
     @classmethod
     def read(cls, path: str) -> "GenesisBlock":
         with open(Path(path), "r") as f:

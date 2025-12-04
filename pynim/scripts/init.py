@@ -10,7 +10,6 @@ def generate_genesis() -> GenesisBlock:
     return GenesisBlock(int(time.time()), Account.load("account.json"))
 
 
-
 def main() -> None:
     parser = ArgumentParser()
     parser.add_argument("--datadir", help="Directory with the blockchain data")

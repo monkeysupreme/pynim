@@ -6,7 +6,6 @@ from pynim.datatypes import Block, Header, Transaction
 from pynim.hashes import keccak256
 
 
-
 class Status(Enum):
     ACTIVE = auto()
     INACTIVE = auto()
@@ -35,12 +34,12 @@ class ValidatorStatus:
 
 class Validator:
     def __init__(
-            self,
-            public_key: bytes,
-            stake: int,
-            reward_balance: int,
-            block_by_hash: dict[bytes, Block],
-            status: ValidatorStatus,
+        self,
+        public_key: bytes,
+        stake: int,
+        reward_balance: int,
+        block_by_hash: dict[bytes, Block],
+        status: ValidatorStatus,
     ) -> None:
         self.public_key = public_key
         self.stake = stake
@@ -54,9 +53,13 @@ class Validator:
         timestamp: int,
         gas_limit: int,
         base_fee: int,
-        transactions: list[Transaction]
+        transactions: list[Transaction],
     ) -> Block:
-        number = 0 if parent_hash is None else self.block_by_hash[parent_hash].header.number + 1
+        number = (
+            0
+            if parent_hash is None
+            else self.block_by_hash[parent_hash].header.number + 1
+        )
         h = Header(
             timestamp=timestamp,
             parent_hash=parent_hash if parent_hash else b"\x00" * 32,
@@ -69,8 +72,6 @@ class Validator:
             if tx.hash is None:
                 tx.hash = keccak256(tx.serialize())
         blk = Block(
-            header=h,
-            transactions=transactions,
-            cached_hash=keccak256(h.serialize())
+            header=h, transactions=transactions, cached_hash=keccak256(h.serialize())
         )
         return blk
