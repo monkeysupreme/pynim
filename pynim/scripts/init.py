@@ -6,8 +6,8 @@ from pynim.account import Account
 from pynim.genesis import GenesisBlock
 
 
-def generate_genesis() -> GenesisBlock:
-    return GenesisBlock(int(time.time()), Account.load("account.json"))
+def generate_genesis(account_path: str) -> GenesisBlock:
+    return GenesisBlock(int(time.time()), Account.load(account_path))
 
 
 def main() -> None:
@@ -19,6 +19,6 @@ def main() -> None:
 
     os.mkdir(args.datadir)
 
-    with open(os.path.join(args.datadir, "genesis.json"), "w") as f:
-        gb = generate_genesis()
+    with open(os.path.join(args.datadir, args.path), "w") as f:
+        gb = generate_genesis("account.json")
         f.write(gb.to_json(indent=4))

@@ -1,15 +1,25 @@
+# pynim/net/logger.py
 import logging
-import sys
+from rich.logging import RichHandler
+from rich.console import Console
+from rich.theme import Theme
 
+theme = Theme({
+    "info": "cyan",
+    "warning": "yellow",
+    "error": "bold red",
+    "debug": "dim white",
+    "success": "bold green"
+})
 
-def init_logging(level=logging.INFO, file=None):
-    handlers = [logging.StreamHandler(sys.stdout)]
-    if file:
-        handlers.append(logging.FileHandler(file))
+console = Console(theme=theme)
 
+def init_logging():
     logging.basicConfig(
-        level=level,
-        format="%(asctime)s | %(levelname)s | %(name)s | %(message)s",
-        handlers=handlers,
-        force=True,
+        level=logging.INFO,
+        format="%(message)s",
+        datefmt="[%X]",
+        handlers=[RichHandler(console=console)]
     )
+
+    logging.getLogger("rich").setLevel(logging.ERROR)

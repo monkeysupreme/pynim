@@ -35,13 +35,13 @@ class Transaction(Serializable):
     def to_dict(self) -> dict:
         return {
             "timestamp": self.timestamp,
-            "hash": self.hash.hex() if self.hash else b"\x00" * 32,
+            "hash": self.hash.hex() if self.hash else b"\x00".hex() * 32,
             "nonce": self.nonce,
             "recipient": self.recipient.hex(),
             "sender": self.sender.hex(),
             "value": self.value,
-            "input_data": self.input_data.hex() if self.input_data else b"\x00" * 10,
-            "signature": self.signature.hex() if self.signature else b"\x00" * 64,
+            "input_data": self.input_data.hex() if self.input_data else b"\x00".hex() * 10,
+            "signature": self.signature.hex() if self.signature else b"\x00".hex() * 64,
         }
 
 
