@@ -30,7 +30,7 @@ class TransactionExistsError(TransactionPoolError):
 class TransactionPool:
     def __init__(self) -> None:
         self.transactions: dict[bytes, Transaction] = {}
-        self.transactions_by_sender: dict[bytes, list[Transaction]]
+        self.transactions_by_sender: dict[bytes, list[Transaction]] = {}
         self.transaction_hashes: set[bytes] = set()
         self.transaction_timestamps: dict[bytes, float] = {}
 
@@ -83,10 +83,17 @@ class TransactionPool:
         self._remove_transaction(transaction)
         return True
 
+    def remove_batch(self, tx_hashes: list[bytes]) -> int:
+        removed = 0
+        for tx_hash in tx_hashes:
+            if self.remove(tx_hash):
+                removed += 1
+        return removed
+
     def get(self, hash: bytes) -> Optional[Transaction]:
         return self.transactions.get(hash)
 
-    def get_transactions_by_sender(
+    def get_pending(
         self,
         limit: Optional[int] = None,
         account_nonces: Optional[dict[bytes, int]] = None,
@@ -112,6 +119,9 @@ class TransactionPool:
         if limit:
             return pending[:limit]
         return pending
+
+    def get_transactions_by_sender(self, sender: bytes) -> list[Transaction]:
+        return self.transactions_by_sender.get(sender, []).copy()
 
     def get_all(self) -> list[Transaction]:
         return list(self.transactions.values())
